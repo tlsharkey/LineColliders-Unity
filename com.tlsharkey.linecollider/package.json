@@ -1,0 +1,8 @@
+{
+    "name": "com.tlsharkey.linecollider",
+    "version": "0.0.1",
+    "displayName": "Line Collider",
+    "description": "Creates cylindrical colliders for lines",
+    "unity": "2017.1",
+    "dependencies": {}
+}
