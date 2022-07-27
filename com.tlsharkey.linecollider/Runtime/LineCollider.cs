@@ -10,7 +10,12 @@ public class LineCollider: MonoBehaviour
         if (line)
         {
             LineCollider.CreateColliderForLine(line, 2);
-            //ShowMesh(line.GetComponent<MeshCollider>().sharedMesh);
+
+            //Vector3[] positions = new Vector3[line.positionCount];
+            //line.GetPositions(positions);
+            //LineCollider.CreateColliderForPoints(line.gameObject, positions);
+            
+            ShowMesh(line.GetComponent<MeshCollider>().sharedMesh, line.transform);
         }
     }
 
@@ -40,6 +45,37 @@ public class LineCollider: MonoBehaviour
             if (i == 1)
             {
                 Vector3[] firstQuad = points[0].GenerateQuadAtPoint(multiplier);
+                mesh = BoxFromQuads(firstQuad, quad);
+            }
+            else
+            {
+                AddFaceTo(mesh, quad);
+            }
+        }
+
+        //ShowMesh(mesh, line.transform);
+        return mesh;
+    }
+
+    public static Mesh GenerateMeshFromPoints(Vector3[] line, float size=0.04f)
+    {
+        if (line.Length == 0) return GenerateMeshFromPoint(Vector3.zero);
+        else if (line.Length == 1) return GenerateMeshFromPoint(line[0]);
+
+        Mesh mesh = new Mesh();
+
+        // Get points
+        Point[] points = new Point[line.Length];
+        for (int i = 0; i < line.Length; i++)
+            points[i] = new Point(line, i, size);
+
+        // Create Mesh
+        for (int i = 1; i < points.Length; i++)
+        {
+            Vector3[] quad = points[i].GenerateQuadAtPoint(1);
+            if (i == 1)
+            {
+                Vector3[] firstQuad = points[0].GenerateQuadAtPoint(1);
                 mesh = BoxFromQuads(firstQuad, quad);
             }
             else
@@ -187,6 +223,16 @@ public class LineCollider: MonoBehaviour
         collider.sharedMesh = m;
     }
 
+    public static void CreateColliderForPoints(GameObject target, Vector3[] points, float size=0.04f)
+    {
+        MeshCollider collider = target.GetComponent<MeshCollider>();
+        if (collider == null)
+            collider = target.gameObject.AddComponent<MeshCollider>();
+
+        Mesh m = GenerateMeshFromPoints(points, size);
+        collider.sharedMesh = m;
+    }
+
 
 
 
@@ -239,6 +285,42 @@ public class LineCollider: MonoBehaviour
 
                 Vector3 comingFrom = (line.GetPosition(index - 1) - this.Position).normalized;
                 Vector3 goingTowards = (this.Position - line.GetPosition(index + 1)).normalized;
+                this.Normal = ((comingFrom + goingTowards) / 2).normalized; // average the coming and going directions
+            }
+        }
+
+        public Point(Vector3[] points, int index, float thickness=0.04f)
+        {
+            this.line = null;
+            float t = (float)index / (float)points.Length;
+
+            this.Position = points[index];
+            this.Thickness = thickness;
+
+            // Get direction to next point
+            if (points.Length < 2)
+            {
+                this.DistanceToNext = 0;
+                this.Normal = Vector3.forward;
+                return;
+            }
+
+            if (index == 0) // first point
+            {
+                this.DistanceToNext = (this.Position - points[index + 1]).magnitude;
+                this.Normal = (this.Position - points[index + 1]).normalized;
+            }
+            else if (index == points.Length - 1) // last point
+            {
+                this.DistanceToNext = -1 * (points[index - 1] - this.Position).magnitude;
+                this.Normal = (points[index - 1] - this.Position).normalized;
+            }
+            else // all the points in between
+            {
+                this.DistanceToNext = (this.Position - points[index + 1]).magnitude;
+
+                Vector3 comingFrom = (points[index - 1] - this.Position).normalized;
+                Vector3 goingTowards = (this.Position - points[index + 1]).normalized;
                 this.Normal = ((comingFrom + goingTowards) / 2).normalized; // average the coming and going directions
             }
         }
