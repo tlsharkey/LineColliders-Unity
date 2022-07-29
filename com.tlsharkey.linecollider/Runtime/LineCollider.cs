@@ -126,7 +126,7 @@ public class LineCollider: MonoBehaviour
         return m;
     }
 
-    private static Mesh BoxFromQuads(Vector3[] a, Vector3[] b)
+    public static Mesh BoxFromQuads(Vector3[] a, Vector3[] b)
     {
         Mesh m = new Mesh();
 
@@ -164,7 +164,7 @@ public class LineCollider: MonoBehaviour
         return m;
     }
 
-    private static void AddFaceTo(Mesh m, Vector3[] quad)
+    public static void AddFaceTo(Mesh m, Vector3[] quad)
     {
         List<Vector3> positions = new List<Vector3>(m.vertices);
         int offset = positions.Count - quad.Length;
@@ -195,7 +195,7 @@ public class LineCollider: MonoBehaviour
         m.triangles = triangles.ToArray();
     }
 
-    private static void ShowMesh(Mesh m, Transform parent = null)
+    public static void ShowMesh(Mesh m, Transform parent = null)
     {
         GameObject g = new GameObject();
         g.transform.SetParent(parent, false);
